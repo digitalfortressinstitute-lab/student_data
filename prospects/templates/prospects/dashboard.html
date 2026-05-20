@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Prospect management dashboard — view, create, edit, and delete prospect records.">
+    <title>{{ page_title }} — DFI Student Data</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════
+           DESIGN TOKENS
+        ═══════════════════════════════════════════ */
+        :root {
+            --bg-body: #FFF9F9;
+            --bg-card: #FFFFFF;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --border-subtle: #f1f5f9;
+            --accent-primary: #3b82f6;
+            --accent-primary-hover: #2563eb;
+            --accent-success: #10b981;
+            --accent-success-hover: #059669;
+            --accent-danger: #ef4444;
+            --accent-danger-hover: #dc2626;
+            --accent-warning: #f59e0b;
+            --null-bg: #f8fafc;
+            --null-text: #cbd5e1;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ═══════════════════════════════════════════
+           RESET & BASE
+        ═══════════════════════════════════════════ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ═══════════════════════════════════════════
+           LAYOUT SHELL
+        ═══════════════════════════════════════════ */
+        .app-shell {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 28px 32px 48px;
+        }
+
+        /* ═══════════════════════════════════════════
+           TOP BAR
+        ═══════════════════════════════════════════ */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .top-bar__brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .top-bar__logo {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.5px;
+            flex-shrink: 0;
+        }
+
+        .top-bar__title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .top-bar__subtitle {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 1px;
+        }
+
+        /* ═══════════════════════════════════════════
+           ACTION BAR
+        ═══════════════════════════════════════════ */
+        .action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .record-count {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .record-count strong {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition);
+            line-height: 1;
+        }
+
+        .btn--primary {
+            background: var(--accent-primary);
+            color: #fff;
+            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn--primary:hover {
+            background: var(--accent-primary-hover);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn--danger {
+            background: transparent;
+            color: var(--accent-danger);
+            border: 1.5px solid var(--accent-danger);
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+
+        .btn--danger:hover {
+            background: var(--accent-danger);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .btn--edit {
+            background: transparent;
+            color: var(--accent-primary);
+            border: 1.5px solid var(--accent-primary);
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+
+        .btn--edit:hover {
+            background: var(--accent-primary);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .btn__icon {
+            font-size: 1.1em;
+        }
+
+        /* ═══════════════════════════════════════════
+           FLASH MESSAGES
+        ═══════════════════════════════════════════ */
+        .messages {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .messages__item {
+            padding: 12px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.35s ease-out;
+        }
+
+        .messages__item--success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .messages__item--error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ═══════════════════════════════════════════
+           TABLE CARD
+        ═══════════════════════════════════════════ */
+        .table-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-subtle);
+            overflow: hidden;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1100px;
+        }
+
+        thead {
+            background: #f8fafc;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        thead th {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background var(--transition);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: #fefcfb;
+        }
+
+        tbody td {
+            padding: 14px 18px;
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .col-email {
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        /* Null placeholder tag */
+        .null-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            background: var(--null-bg);
+            color: var(--null-text);
+            border: 1px dashed #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            font-style: italic;
+            letter-spacing: 0.3px;
+        }
+
+        /* Action cell */
+        .actions-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-form {
+            display: inline;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ═══════════════════════════════════════════
+           EMPTY STATE
+        ═══════════════════════════════════════════ */
+        .empty-state {
+            text-align: center;
+            padding: 72px 24px;
+        }
+
+        .empty-state__icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.35;
+        }
+
+        .empty-state__heading {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .empty-state__text {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        /* ═══════════════════════════════════════════
+           HOW HEARD BADGE
+        ═══════════════════════════════════════════ */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .badge--channel {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* ═══════════════════════════════════════════
+           PAGINATION
+        ═══════════════════════════════════════════ */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .pagination-bar__info {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .pagination-bar__info strong {
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+
+        .pagination-bar__controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .page-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 38px;
+            height: 38px;
+            padding: 0 10px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition);
+            line-height: 1;
+        }
+
+        .page-btn:hover {
+            background: #f1f5f9;
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+
+        .page-btn--active {
+            background: var(--accent-primary);
+            color: #fff;
+            border-color: var(--accent-primary);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+            pointer-events: none;
+        }
+
+        .page-btn--disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .page-btn--nav {
+            font-size: 0.78rem;
+            letter-spacing: 0.3px;
+            padding: 0 14px;
+        }
+
+        .page-ellipsis {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 38px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            user-select: none;
+        }
+
+        /* ═══════════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .app-shell { padding: 16px; }
+            .top-bar { flex-direction: column; align-items: flex-start; }
+            .action-bar { flex-direction: column; align-items: flex-start; }
+            .pagination-bar { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ─── TOP BAR ─── -->
+        <header class="top-bar">
+            <div class="top-bar__brand">
+                <div class="top-bar__logo">DFI</div>
+                <div>
+                    <h1 class="top-bar__title">{{ page_title }}</h1>
+                    <p class="top-bar__subtitle">Digital Fortress Institute — Student Prospect Records</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- ─── FLASH MESSAGES ─── -->
+        {% if messages %}
+        <ul class="messages" id="flash-messages">
+            {% for msg in messages %}
+            <li class="messages__item messages__item--{{ msg.tags }}">
+                {% if msg.tags == 'success' %}✓{% else %}✕{% endif %}
+                {{ msg }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <!-- ─── ACTION BAR ─── -->
+        <div class="action-bar">
+            <p class="record-count">
+                Showing <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong> of <strong>{{ total_count }}</strong> prospect{{ total_count|pluralize }}
+            </p>
+            <a href="{% url 'prospects:prospect_create' %}" class="btn btn--primary" id="btn-create-prospect">
+                <span class="btn__icon">+</span> Create Prospect
+            </a>
+        </div>
+
+        <!-- ─── DATA TABLE ─── -->
+        <div class="table-card">
+            {% if prospects %}
+            <div class="table-wrap">
+                <table id="prospects-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Full Name</th>
+                            <th>Phone</th>
+                            <th>Location</th>
+                            <th>Occupation</th>
+                            <th>Degree</th>
+                            <th>Program</th>
+                            <th>How Heard</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in prospects %}
+                        <tr id="prospect-row-{{ p.pk }}">
+                            <td style="color: var(--text-muted); font-size: 0.82rem;">{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                            <td class="col-email">{{ p.email }}</td>
+                            <td>{% if p.full_name %}{{ p.full_name }}{% else %}<span class="null-tag">—</span>{% endif %}</td>
+                            <td>{% if p.phone_number %}{{ p.phone_number }}{% else %}<span class="null-tag">—</span>{% endif %}</td>
+                            <td>{% if p.location %}{{ p.location }}{% else %}<span class="null-tag">—</span>{% endif %}</td>
+                            <td>{% if p.occupation %}{{ p.occupation }}{% else %}<span class="null-tag">—</span>{% endif %}</td>
+                            <td>{% if p.highest_degree %}{{ p.highest_degree }}{% else %}<span class="null-tag">—</span>{% endif %}</td>
+                            <td>{% if p.program %}{{ p.program }}{% else %}<span class="null-tag">—</span>{% endif %}</td>
+                            <td>
+                                {% if p.how_heard %}
+                                    <span class="badge badge--channel">{{ p.get_how_heard_display }}</span>
+                                {% else %}
+                                    <span class="null-tag">—</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 0.82rem; color: var(--text-secondary);">
+                                {{ p.created_at|date:"M d, Y" }}
+                            </td>
+                            <td>
+                                <div class="actions-cell">
+                                    <a href="{% url 'prospects:prospect_edit' p.pk %}"
+                                       class="btn btn--edit"
+                                       id="btn-edit-{{ p.pk }}">Edit</a>
+                                    <form method="post"
+                                          action="{% url 'prospects:prospect_delete' p.pk %}"
+                                          class="delete-form"
+                                          onsubmit="return confirm('Are you sure you want to delete prospect {{ p.email|escapejs }}?');">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn--danger"
+                                                id="btn-delete-{{ p.pk }}">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state__icon">📋</div>
+                <h2 class="empty-state__heading">No prospects yet</h2>
+                <p class="empty-state__text">Create your first prospect record to get started.</p>
+                <a href="{% url 'prospects:prospect_create' %}" class="btn btn--primary">
+                    <span class="btn__icon">+</span> Create Prospect
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ─── PAGINATION ─── -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="pagination-bar" id="pagination" aria-label="Table pagination">
+            <p class="pagination-bar__info">
+                Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+            </p>
+            <div class="pagination-bar__controls">
+                <!-- Previous -->
+                {% if page_obj.has_previous %}
+                <a href="?page=1" class="page-btn page-btn--nav" title="First page">« First</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="page-btn page-btn--nav" title="Previous page">‹ Prev</a>
+                {% else %}
+                <span class="page-btn page-btn--nav page-btn--disabled">« First</span>
+                <span class="page-btn page-btn--nav page-btn--disabled">‹ Prev</span>
+                {% endif %}
+
+                <!-- Page numbers (show window of pages around current) -->
+                {% for pg in page_obj.paginator.page_range %}
+                    {% if pg == page_obj.number %}
+                        <span class="page-btn page-btn--active">{{ pg }}</span>
+                    {% elif pg == 1 or pg == page_obj.paginator.num_pages %}
+                        <a href="?page={{ pg }}" class="page-btn">{{ pg }}</a>
+                    {% elif pg >= page_obj.number|add:"-2" and pg <= page_obj.number|add:"2" %}
+                        <a href="?page={{ pg }}" class="page-btn">{{ pg }}</a>
+                    {% elif pg == page_obj.number|add:"-3" or pg == page_obj.number|add:"3" %}
+                        <span class="page-ellipsis">…</span>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Next -->
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="page-btn page-btn--nav" title="Next page">Next ›</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="page-btn page-btn--nav" title="Last page">Last »</a>
+                {% else %}
+                <span class="page-btn page-btn--nav page-btn--disabled">Next ›</span>
+                <span class="page-btn page-btn--nav page-btn--disabled">Last »</span>
+                {% endif %}
+            </div>
+        </nav>
+        {% endif %}
+
+    </div>
+
+    <script>
+        // Auto-dismiss flash messages after 4 seconds
+        setTimeout(function () {
+            var msgs = document.getElementById('flash-messages');
+            if (msgs) {
+                msgs.style.transition = 'opacity 0.4s ease';
+                msgs.style.opacity = '0';
+                setTimeout(function () { msgs.remove(); }, 400);
+            }
+        }, 4000);
+    </script>
+</body>
+</html>
